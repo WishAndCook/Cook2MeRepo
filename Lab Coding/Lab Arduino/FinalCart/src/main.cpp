@@ -27,13 +27,13 @@ const unsigned long period1 = 1500;   //
 const unsigned long period2 = 500;    //
 //--------------------- Milis function ---------------------//
 //--------------------- Code essencials --------------------//
- 
+
 //  WIFI CONNECTIONS
-const char* ssid = "JosePC";             //  "JosePC";       "TP-Link_4676";
-const char* password = "esp32wish";      //  "esp32wish";    "30312463"; 
+const char* ssid = "cook4me";             //  "JosePC";       "TP-Link_4676";
+const char* password = "fernao2023";      //  "esp32wish";    "30312463"; 
 
 #define TrialTopic "Trial"              //  Callback
-#define mqtt_server "192.168.1.200"     //  IP of MQTT BROKER "192.168.1.200" "192.168.0.115"
+#define mqtt_server "192.168.0.50"      //  IP of MQTT BROKER "192.168.1.200" "192.168.0.115"
 WiFiClient Car1;                        //  MQTT CLIENT
 PubSubClient client(Car1);              //  Must CHANGE 4 every device
 
@@ -88,11 +88,13 @@ void conex()  {
   Serial.println(ssid);
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
-  
+
   delay(2000);
+
+  IPAddress staticIP(192,168,0,60);
   WiFi.begin(ssid, password);
   int wific = 0;
-  
+
   while (WiFi.status() != WL_CONNECTED) {
 
     delay(1000);
@@ -102,7 +104,7 @@ void conex()  {
 
     if (wific > 5){ ESP.restart();  }
   }
-  
+
   digitalWrite(l2, LOW);
   Serial.println("");
   Serial.println("WiFi connected");  
@@ -140,7 +142,7 @@ void callback(char* topic, byte* message, unsigned int length)  {
 
   Serial.print(". Message: ");
   String messageTemp;
-  
+
   MqttInMsg = messageTemp;
   Serial.println();
 
@@ -246,7 +248,7 @@ void MotorIdle() {
 void GoTo (int valid, int Pos, int Side) {
 
   while (Pos > 0) {     // Movimiento
-  
+
     delayMicroseconds(10000);
     Serial.print("Valor de la Pocision P = ");
     Serial.println(Pos);
@@ -276,18 +278,18 @@ void GoTo (int valid, int Pos, int Side) {
           BtState = digitalRead(BPin);
           Serial.print("Boton ");
           Serial.println(BtState);
-          
+
           if (BtState != LastBtState && BtState == 1) {   //    Button or positioning sensor
-            
+
             BtCont++;
             Serial.print("Counter Value = ");
             Serial.println(BtCont);
           }
 
           LastBtState = BtState;
-          
+
           if (BtCont == Pos && Returning == false) {      //    Button or positioning sensor   
-            
+
             BtCont = 0;                                 
             Returning = true;
             MotorStop();
@@ -310,7 +312,7 @@ void GoTo (int valid, int Pos, int Side) {
           }
 
           if (BtCont == Pos && Returning == true)  {    //    Reseting parameters
-            
+
             BtCont = 0;
             Returning = false;
             Pos = 0;
@@ -326,7 +328,7 @@ void GoTo (int valid, int Pos, int Side) {
             MotorIdle();
             break;
           }   
-               
+
         delay(100);
         }               //    While
 
@@ -351,18 +353,18 @@ void GoTo (int valid, int Pos, int Side) {
           BtState = digitalRead(BPin);
           Serial.print("Boton ");
           Serial.println(BtState);
-          
+
           if (BtState != LastBtState && BtState == 1) {   //    Button or positioning sensor
-            
+
             BtCont++;
             Serial.print("Counter Value = ");
             Serial.println(BtCont);
           }
 
           LastBtState = BtState;
-          
+
           if (BtCont == Pos && Returning == false) {      //    Button or positioning sensor   
-            
+
             BtCont = 0;                                 
             Returning = true;
             MotorStop();
@@ -385,7 +387,7 @@ void GoTo (int valid, int Pos, int Side) {
           }
 
           if (BtCont == Pos && Returning == true)  {    //    Reseting parameters
-            
+
             BtCont = 0;
             Returning = false;
             Pos = 0;
@@ -401,7 +403,7 @@ void GoTo (int valid, int Pos, int Side) {
             MotorIdle();
             break;
           }   
-               
+
         delay(100);
         }               //    While
 
@@ -426,18 +428,18 @@ void GoTo (int valid, int Pos, int Side) {
           BtState = digitalRead(BPin);
           Serial.print("Boton ");
           Serial.println(BtState);
-          
+
           if (BtState != LastBtState && BtState == 1) {   //    Button or positioning sensor
-            
+
             BtCont++;
             Serial.print("Counter Value = ");
             Serial.println(BtCont);
           }
 
           LastBtState = BtState;
-          
+
           if (BtCont == Pos && Returning == false) {      //    Button or positioning sensor   
-            
+
             BtCont = 0;                                 
             Returning = true;
             MotorStop();
@@ -460,7 +462,7 @@ void GoTo (int valid, int Pos, int Side) {
           }
 
           if (BtCont == Pos && Returning == true)  {    //    Reseting parameters
-            
+
             BtCont = 0;
             Returning = false;
             Pos = 0;
@@ -476,7 +478,7 @@ void GoTo (int valid, int Pos, int Side) {
             MotorIdle();
             break;
           }   
-               
+
         delay(100);
         }               //    While
 
@@ -484,8 +486,8 @@ void GoTo (int valid, int Pos, int Side) {
       }
 
     }                   //    Switch case
-  
-  
+
+
   }                     //    While
 
 }                       //    Loop
@@ -519,11 +521,11 @@ void setup()  {
 void loop() {
 
   if (!client.connected()) {  reconnect();}     //  mqtt server conex
-  
+
   current = millis();
 
   if(current - start >= period1) {
-    
+
     Alive();
     MotorIdle();
     Serial.println("IDLE");
@@ -535,25 +537,9 @@ void loop() {
       GoTo(valid, Pos, Side);
       Pos = 0;
     }
-    
+
 
     start = millis();
   }
   client.loop();
 }
-
-
-
-
-
-/*
-
-
-void loop() {
-
-  MovePositive();
-
-}
-
-
-*/
