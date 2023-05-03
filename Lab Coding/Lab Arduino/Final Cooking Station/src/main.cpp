@@ -356,3 +356,71 @@ void Online()  {
   mqttClient.publish("Out/Cooking_1/Status", jsonStr.c_str());       //  MQTT publishing
 
 }
+
+//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////  Created Funtions  /////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+
+void setup() {
+
+  pinMode(relay0, OUTPUT);  //  Temperature
+  pinMode(relay1, OUTPUT);  //  Speed
+  pinMode(relay2, OUTPUT);  //  Time
+  pinMode(relay3, OUTPUT);  //  Play
+  pinMode(relay4, OUTPUT);  //  Minus
+  pinMode(relay5, OUTPUT);  //  Plus
+  pinMode(relay6, OUTPUT);  //  Reset
+
+  pinMode(A5, INPUT);
+  delay(500);
+
+  Ethernet.begin(mac, ip);
+  mqttClient.setServer(server, 1883);
+  mqttClient.setCallback(callback);
+
+  delay(1500);
+
+  Serial.begin(9600);
+
+}
+
+void loop() {
+
+  current = millis();
+  
+  if (!mqttClient.connected()) {  reconnect(); }
+  //cookSet(speed, temperature, time);
+
+  if(current - start >= period1) {
+
+    cont++;
+
+    BuzzerValue = analogRead(A5);
+    Serial.println(BuzzerValue);
+    if(BuzzerValue < 700) { BuzzerCont++;}
+    if(BuzzerCont >= 3) { cooking = false;}
+
+    if(cont == 10){
+      Online();
+      cont = 0;
+    }
+    
+    if(mqttAction == true){
+
+      ResetButton();
+
+      cookSet(speed, temperature, time);
+
+      StartButton();
+      delay(100);
+
+      mqttAction = false;
+      Online();
+      BuzzerCont = 0;
+    }
+
+    start = millis();
+  }
+  mqttClient.loop();
+
+}
